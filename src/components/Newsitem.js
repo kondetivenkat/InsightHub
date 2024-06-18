@@ -1,25 +1,53 @@
-import React from 'react'
+import React from 'react';
+import PropTypes from 'prop-types';
 
-const Newsitem =(props)=>{
-    const {title,description,imageUrl,newsUrl,author,date,source}=props;
-    return (
-      <div>
-        <div className="card">
-          <div style={{display:'flex',
-              justifyContent:'flex-end',
-              right:'0',
-              position:'absolute'}}>
-        <span class="badge rounded-pill bg-danger" style={{left:'90%',zIndex:'1'}}>{source}</span></div>
-          <img src={imageUrl==null? "https://c.biztoc.com/p/1d5cf987548688e6/s.webp":imageUrl} className="card-img-top" alt="images" />
-          <div className="card-body mx-3 my-3">
-            <h5 className="card-title">{title}</h5>
-            <p className="card-text">{description}</p>
-            <p className="card-text">by {author?author:'unknown'} on {new Date(date).toGMTString()}</p>
-            <a rel="noreferrer" href={newsUrl} target="_blank" className="btn btn-sm btn-dark">Read More</a>
-          </div>
-         </div>
+const NewsItem = ({ title, description, imageUrl, newsUrl, author, date, source, isFavorite, onAddFavorite, onRemoveFavorite }) => {
+  const handleImageError = (e) => {
+    e.target.src = 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fen.m.wikipedia.org%2Fwiki%2FFile%3ABlue_question_mark_icon.svg&psig=AOvVaw0GYgMCT5Z5aioaYCFDoQVa&ust=1718792347145000&source=images&cd=vfe&opi=89978449&ved=0CBEQjRxqFwoTCKjEgc325IYDFQAAAAAdAAAAABAE'; // URL of a broken image link icon
+  };  
+
+  return (
+    <div className="card my-3">
+      <img src={imageUrl} className="card-img-top" alt="..." onError={handleImageError} />
+      <div className="card-body">
+        <h5 className="card-title">{title}</h5>
+        <p className="card-text">{description}</p>
+        <p className="card-text">
+          <small className="text-muted">
+            By {author ? author : 'Unknown'} on {new Date(date).toGMTString()}
+          </small>
+        </p>
+        <p className="card-text">
+          <small className="text-muted">Source: {source}</small>
+        </p>
+        <a href={newsUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary">
+          Read More
+        </a>
+        {isFavorite ? (
+          <button className="btn btn-sm btn-danger ml-2" onClick={onRemoveFavorite}>
+            Remove from Favorites
+          </button>
+        ) : (
+          <button className="btn btn-sm btn-success ml-2" onClick={onAddFavorite}>
+            Add to Favorites
+          </button>
+        )}
       </div>
-    )
-}
+    </div>
+  );
+};
 
-export default Newsitem
+NewsItem.propTypes = {
+  title: PropTypes.string,
+  description: PropTypes.string,
+  imageUrl: PropTypes.string,
+  newsUrl: PropTypes.string,
+  author: PropTypes.string,
+  date: PropTypes.string,
+  source: PropTypes.string,
+  isFavorite: PropTypes.bool,
+  onAddFavorite: PropTypes.func,
+  onRemoveFavorite: PropTypes.func,
+};
+
+export default NewsItem;
