@@ -1,169 +1,141 @@
 import React, { useEffect, useState } from 'react';
+import NewsItem from './NewsItem';
 import Spinner from './Spinner';
-import InfiniteScroll from 'react-infinite-scroll-component';
 import PropTypes from 'prop-types';
-import Newsitem from './Newsitem.js';
+
 
 const News = (props) => {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
-  const [query, setQuery] = useState('');
-  const [favorites, setFavorites] = useState([]);
-  const [showFavorites, setShowFavorites] = useState(false);
 
-  const capitalFirstLetter = (string) => {
+  const [searchText, setSearchText] = useState("");
+
+  const handleSearch = () => {
+    const filteredArticles = articles.filter(
+      (article) =>
+        article.title.toLowerCase().indexOf(searchText.toLowerCase()) !== -1
+    );
+    setArticles(filteredArticles);
+  };
+
+  const capitalizeFirstLetter = (string) => {
     return string.charAt(0).toUpperCase() + string.slice(1);
-  };
+  }
 
-  useEffect(() => {
-    document.title = `${capitalFirstLetter(props.category)} - News World`;
-    fetchNews();
-    loadFavorites();
-  }, [props.category, props.country, props.pageSize, props.apikey]); // Dependency array for initial fetch
-
-  useEffect(() => {
-    fetchNews();
-  }, [query, page]); // Dependency array for search and pagination
-
-  const fetchNews = async () => {
+  const updateNews = async () => {
+    props.setProgress(10);
+    const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apiKey}&page=${page}&pageSize=${props.pageSize}`;
     setLoading(true);
-    const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apikey=${props.apikey}&page=${page}&pageSize=${props.pageSize}&q=${query}`;
-    const response = await fetch(url);
-    const data = await response.json();
-    setArticles(data.articles);
-    setTotalResults(data.totalResults);
+    let data = await fetch(url);
+    props.setProgress(30);
+    let parsedData = await data.json();
+    props.setProgress(70);
+    console.log(parsedData)
+    setArticles(parsedData.articles);
+    setTotalResults(parsedData.totalResults);
     setLoading(false);
-  };
+    props.setProgress(100);
+  }
 
-  const loadFavorites = () => {
-    const savedFavorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    setFavorites(savedFavorites);
-  };
+  useEffect(() => {
+    document.title = `${capitalizeFirstLetter(props.category)} - NeighborGood News`;
+    updateNews();
+    // eslint-disable-next-line
+  }, [page, props.category]);
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setPage(1); // Reset page to 1 when performing a new search
-    fetchNews();
-  };
+  const handlePreviousClick = () => {
+    setPage(page - 1);
+  }
 
-  const handleAddFavorite = (article) => {
-    const updatedFavorites = [...favorites, article];
-    setFavorites(updatedFavorites);
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-  };
-
-  const handleRemoveFavorite = (url) => {
-    const updatedFavorites = favorites.filter((fav) => fav.url !== url);
-    setFavorites(updatedFavorites);
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-  };
-
-  const toggleFavorites = () => {
-    setShowFavorites(!showFavorites);
-  };
-
-  const favoriteArticles = articles.filter((article) => favorites.some((fav) => fav.url === article.url));
+  const handleNextClick = () => {
+    setPage(page + 1);
+  }
 
   return (
     <>
-      <h1 className="text-center" style={{ margin: '30px 0px', marginTop: '50px' }}>
-        News World - Top {props.category} Headlines
+      <h1 className="text-center" style={{ margin: '35px 0px', marginTop: '90px' }}>
+        NeighborGood News - Top {capitalizeFirstLetter(props.category)} Headlines
       </h1>
-      <div className="d-flex justify-content-between mb-4">
-        <form onSubmit={handleSearch} className="d-flex align-items-center">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Search articles..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-          <button type="submit" className="btn btn-primary ml-2">
-            Search
-          </button>
-        </form>
-        <button className="btn btn-success" onClick={toggleFavorites}>
-          {showFavorites ? 'Hide Favorites' : 'Show Favorites'}
-        </button>
-      </div>
-      {loading && <Spinner />}
-      <InfiniteScroll
-        dataLength={articles.length}
-        next={() => setPage(page + 1)}
-        hasMore={articles.length < totalResults}
-        loader={<Spinner />}
-      >
-        <div className="container">
-          <div className="row">
-            {showFavorites
-              ? favoriteArticles.map((element) => (
-                  <div className="col-md-4" key={element.url}>
-                    <Newsitem
-                      title={element.title || ''}
-                      description={element.description || ''}
-                      imageUrl={element.urlToImage}
-                      newsUrl={element.url}
-                      author={element.author}
-                      date={element.publishedAt}
-                      source={element.source.name}
-                      isFavorite={favorites.some((fav) => fav.url === element.url)}
-                      onAddFavorite={() => handleAddFavorite(element)}
-                      onRemoveFavorite={() => handleRemoveFavorite(element.url)}
-                    />
-                  </div>
-                ))
-              : articles.map((element) => (
-                  <div className="col-md-4" key={element.url}>
-                    <Newsitem
-                      title={element.title || ''}
-                      description={element.description || ''}
-                      imageUrl={element.urlToImage}
-                      newsUrl={element.url}
-                      author={element.author}
-                      date={element.publishedAt}
-                      source={element.source.name}
-                      isFavorite={favorites.some((fav) => fav.url === element.url)}
-                      onAddFavorite={() => handleAddFavorite(element)}
-                      onRemoveFavorite={() => handleRemoveFavorite(element.url)}
-                    />
-                  </div>
-                ))}
+
+      <div className="search-box p-2 text-center mb-2">
+        <div className="row justify-content-center">
+          <div className="col-lg-6 col-md-8 col-sm-10">
+            <div className="input-group">
+              <input
+                onChange={(e) => setSearchText(e.target.value)}
+                type="text"
+                name="search"
+                id="search"
+                className="form-control"
+                placeholder="Search"
+              />
+              <button
+                className="btn btn-primary"
+                onClick={handleSearch}
+              >
+                Search
+              </button>
+            </div>
           </div>
         </div>
-      </InfiniteScroll>
-      <div className="container d-flex justify-content-between my-3">
+      </div>
+
+
+
+      {loading && <Spinner />}
+      <div className="container">
+        <div className="row">
+          {articles.map((element, index) => {
+            return (
+              <div className="col-md-4" key={index}>
+                <NewsItem
+                  title={element.title ? element.title : ""}
+                  description={element.description ? element.description : ""}
+                  imageUrl={element.urlToImage}
+                  newsUrl={element.url}
+                  author={element.author}
+                  date={element.publishedAt}
+                  source={element.source.name}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="container d-flex justify-content-between">
         <button
           disabled={page <= 1}
+          type="button"
           className="btn btn-dark"
-          onClick={() => setPage(page - 1)}
+          onClick={handlePreviousClick}
         >
           &larr; Previous
         </button>
         <button
-          disabled={page * props.pageSize >= totalResults}
+          disabled={page + 1 > Math.ceil(totalResults / props.pageSize)}
+          type="button"
           className="btn btn-dark"
-          onClick={() => setPage(page + 1)}
+          onClick={handleNextClick}
         >
           Next &rarr;
         </button>
       </div>
     </>
   );
-};
+}
 
 News.defaultProps = {
   country: 'in',
   pageSize: 8,
   category: 'general',
-};
+}
 
 News.propTypes = {
   country: PropTypes.string,
   pageSize: PropTypes.number,
   category: PropTypes.string,
-  apikey: PropTypes.string.isRequired,
-};
+}
 
 export default News;

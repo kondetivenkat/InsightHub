@@ -22,6 +22,13 @@ const Navbar =()=>{
         <li className='nav-item'><Link className='nav-link' to='/sports'>Sports</Link></li>
         <li className='nav-item'><Link className='nav-link' to='/technology'>Technology</Link></li>
       </ul>
+      <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li className="nav-item">
+              <Link className="nav-link favorites-link" to="/favorites">
+                  Favorites
+              </Link>
+          </li>
+      </ul>
     </div>
   </div>
 </nav>

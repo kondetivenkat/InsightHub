@@ -1,10 +1,20 @@
-import React from 'react'
-import Loading from './Loading.gif'
- const Spinner=()=> {
-    return (
-      <div className='text-center'>
-        <img src={Loading} alt='Loading'style={{width:"30px",height:'30px'}}/>
-        </div>
-    )
-}
-export default Spinner
+import React from 'react';
+import loading from './Loading.gif';
+
+const Spinner = () => {
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: '9999',
+      }}
+    >
+      <img src={loading} alt="loading" />
+    </div>
+  );
+};
+
+export default Spinner;

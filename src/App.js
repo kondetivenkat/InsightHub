@@ -1,44 +1,38 @@
-
-import React,{useState } from 'react';
-import './App.css';
-import Navbar from './components/Navbar';
+import React, { useState } from 'react';
+import NavBar from './components/Navbar';
 import News from './components/News';
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-} from "react-router-dom";
-import LoadingBar from 'react-top-loading-bar'
+import { Routes, Route } from 'react-router-dom';
+import LoadingBar from 'react-top-loading-bar';
+import Favorites from './components/Favorites';
+import NewsDetail from './components/NewsDetail';
+import { FavoritesProvider } from './components/FavoritesContext';
 
-const App=()=>{
-  const apikey = 'bda4364587dd4ae6807c5cecb98972df';
-  const pageSize=5;
-  const [progress, setProgress] = useState(0)
-  
-    return (
-      <Router>
-        <LoadingBar
-          color='#f11946'
-          height={3}
-          progress={progress}
-        />
-        <Navbar/>
-      <div className='container'>
-        
+const App = () => {
+  const pageSize = 5;
+  const apiKey = "41f4d656dd5b4edbbe3598ee682e1cfa"; 
+  const [progress, setProgress] = useState(0);
+
+  return (
+    <div>
+      <FavoritesProvider>
+        <NavBar />
+        <LoadingBar height={3} color="#f11946" progress={progress} />
+
         <Routes>
-        <Route path="/" element={<News setProgress={setProgress}  key='home' pageSize={pageSize} apikey={apikey} country="in" category="general"/> }/> 
-        <Route path="/business" element={<News setProgress={setProgress}  key='business' pageSize={pageSize} apikey={apikey} country="in" category="business"/>} /> 
-        <Route path="/entartainment" element={<News setProgress={setProgress}  key='entertainment' pageSize={pageSize} apikey={apikey} country="in" category="entertainment"/>}/>  
-        <Route path="/general" element={<News setProgress={setProgress}  key='general' pageSize={pageSize} apikey={apikey} country="in" category="general"/> }/> 
-        <Route path="/health" element={<News setProgress={setProgress}  key='health' pageSize={pageSize} apikey={apikey} country="in" category="health"/> }/> 
-        <Route path="/sports" element={ <News setProgress={setProgress}  key='sports' pageSize={pageSize} apikey={apikey} country="in" category="sports"/>}/>
-        <Route path="/technology" element={<News setProgress={setProgress}  key='technology' pageSize={pageSize} apikey={apikey} country="in" category="technology"/> }/> 
-        <Route path="/science" element={<News setProgress={setProgress}  key='science' pageSize={pageSize} apikey={apikey} country="in" category="science"/>}/> 
+          <Route path="/" element={<News apiKey={apiKey} setProgress={setProgress} key="general" pageSize={pageSize} country="in" category="general" />} />
+          <Route path="/business" element={<News apiKey={apiKey} setProgress={setProgress} key="business" pageSize={pageSize} country="in" category="business" />} />
+          <Route path="/entertainment" element={<News apiKey={apiKey} setProgress={setProgress} key="entertainment" pageSize={pageSize} country="in" category="entertainment" />} />
+          <Route path="/general" element={<News apiKey={apiKey} setProgress={setProgress} key="general" pageSize={pageSize} country="in" category="general" />} />
+          <Route path="/health" element={<News apiKey={apiKey} setProgress={setProgress} key="health" pageSize={pageSize} country="in" category="health" />} />
+          <Route path="/science" element={<News apiKey={apiKey} setProgress={setProgress} key="science" pageSize={pageSize} country="in" category="science" />} />
+          <Route path="/sports" element={<News apiKey={apiKey} setProgress={setProgress} key="sports" pageSize={pageSize} country="in" category="sports" />} />
+          <Route path="/technology" element={<News apiKey={apiKey} setProgress={setProgress} key="technology" pageSize={pageSize} country="in" category="technology" />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/news-detail" element={<NewsDetail />} />
         </Routes>
-      </div>
-  
-    </Router>
-    ) 
-}
-export default App
+      </FavoritesProvider>
+    </div>
+  );
+};
 
+export default App;
