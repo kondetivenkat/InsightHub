@@ -2,6 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFavorites } from './FavoritesContext';
 
+
+// updated the name
 const NewsItem = (props) => {
   const { title, description, imageUrl, newsUrl, author, date, source, content } = props;
   const { toggleFavorite, isFavorite } = useFavorites();
