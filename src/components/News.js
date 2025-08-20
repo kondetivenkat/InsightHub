@@ -153,13 +153,14 @@
 // export default News;
 
 
-import React, { useEffect, useState } from 'react';
-import NewsItem from './NewsItem';
-import Spinner from './Spinner';
-import PropTypes from 'prop-types';
+import React, { useEffect, useState } from "react";
+import NewsItem from "./NewsItem";
+import Spinner from "./Spinner";
+import PropTypes from "prop-types";
 
 const News = (props) => {
   const [articles, setArticles] = useState([]);
+  const [allArticles, setAllArticles] = useState([]); // ✅ keep original
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalResults, setTotalResults] = useState(0);
@@ -174,22 +175,26 @@ const News = (props) => {
   };
 
   const handleSearch = () => {
-    const filteredArticles = articles.filter(
-      (article) =>
-        article.title.toLowerCase().indexOf(searchText.toLowerCase()) !== -1
-    );
-    setArticles(filteredArticles);
+    if (searchText.trim() === "") {
+      setArticles(allArticles); // reset
+    } else {
+      const filtered = allArticles.filter(
+        (article) =>
+          article.title &&
+          article.title.toLowerCase().includes(searchText.toLowerCase())
+      );
+      setArticles(filtered);
+    }
   };
 
-  const capitalizeFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  }
+  const capitalizeFirstLetter = (string) =>
+    string.charAt(0).toUpperCase() + string.slice(1);
 
   const updateNews = async () => {
     props.setProgress(10);
-    const apikey = 'afab3dfd8ab78212dea2097475673b69';
-    const category = props.category || 'general';
-    const url = `https://gnews.io/api/v4/top-headlines?category=${category}&lang=en&country=in&max=${props.pageSize}&apikey=${apikey}`;
+    const apikey = "afab3dfd8ab78212dea2097475673b69";
+    const category = props.category || "general";
+    const url = `https://gnews.io/api/v4/top-headlines?category=${category}&lang=en&country=in&max=${props.pageSize}&page=${page}&apikey=${apikey}`;
 
     setLoading(true);
     let data = await fetch(url);
@@ -197,30 +202,29 @@ const News = (props) => {
     let parsedData = await data.json();
     props.setProgress(70);
 
-    console.log(parsedData);
+    console.log("API response:", parsedData);
+
     setArticles(parsedData.articles || []);
-    setTotalResults(parsedData.totalResults || 0);
+    setAllArticles(parsedData.articles || []); // ✅ backup
+    setTotalResults(parsedData.totalArticles || 0); // ✅ FIXED
     setLoading(false);
     props.setProgress(100);
-  }
+  };
 
   useEffect(() => {
-    document.title = `${capitalizeFirstLetter(props.category)} - NeighborGood News`;
+    document.title = `${capitalizeFirstLetter(
+      props.category
+    )} - NeighborGood News`;
     updateNews();
     // eslint-disable-next-line
   }, [page, props.category]);
 
-  const handlePreviousClick = () => {
-    setPage(page - 1);
-  }
-
-  const handleNextClick = () => {
-    setPage(page + 1);
-  }
-
   return (
     <>
-      <h1 className="text-center" style={{ margin: '35px 0px', marginTop: '90px' }}>
+      <h1
+        className="text-center"
+        style={{ margin: "35px 0px", marginTop: "90px" }}
+      >
         NeighborGood News - Top {capitalizeFirstLetter(props.category)} Headlines
       </h1>
 
@@ -232,15 +236,10 @@ const News = (props) => {
               <input
                 onChange={(e) => setSearchText(e.target.value)}
                 type="text"
-                name="search"
-                id="search"
                 className="form-control"
                 placeholder="Search"
               />
-              <button
-                className="btn btn-primary"
-                onClick={handleSearch}
-              >
+              <button className="btn btn-primary" onClick={handleSearch}>
                 Search
               </button>
             </div>
@@ -251,21 +250,20 @@ const News = (props) => {
       {loading && <Spinner />}
       <div className="container">
         <div className="row">
-          {articles.map((element, index) => {
-            return (
+          {Array.isArray(articles) &&
+            articles.map((element, index) => (
               <div className="col-md-4" key={index}>
                 <NewsItem
-                  title={element.title ? element.title : ""}
-                  description={element.description ? element.description : ""}
-                  imageUrl={getImage(element)}   
+                  title={element.title || ""}
+                  description={element.description || ""}
+                  imageUrl={getImage(element)}
                   newsUrl={element.url}
                   author={element.source?.name || "Unknown"}
                   date={element.publishedAt}
                   source={element.source?.name || "News"}
                 />
               </div>
-            );
-          })}
+            ))}
         </div>
       </div>
 
@@ -275,33 +273,34 @@ const News = (props) => {
           disabled={page <= 1}
           type="button"
           className="btn btn-dark"
-          onClick={handlePreviousClick}
+          onClick={() => setPage(page - 1)}
         >
           &larr; Previous
         </button>
         <button
-          disabled={page + 1 > Math.ceil(totalResults / props.pageSize)}
+          disabled={page >= Math.ceil(totalResults / props.pageSize)}
           type="button"
           className="btn btn-dark"
-          onClick={handleNextClick}
+          onClick={() => setPage(page + 1)}
         >
           Next &rarr;
         </button>
       </div>
     </>
   );
-}
+};
 
 News.defaultProps = {
-  country: 'in',
+  country: "in",
   pageSize: 8,
-  category: 'general',
-}
+  category: "general",
+};
 
 News.propTypes = {
   country: PropTypes.string,
   pageSize: PropTypes.number,
   category: PropTypes.string,
-}
+  setProgress: PropTypes.func,
+};
 
 export default News;
